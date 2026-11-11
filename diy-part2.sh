@@ -35,6 +35,11 @@ git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-a
 ./scripts/feeds uninstall luci-app-eqos
 ./scripts/feeds install -p kenzok8 luci-app-eqos
 
+# 当前 LuCI feed 也有 AdGuardHome，但没有 INCLUDE_binary 子选项，且配置/init 名称不同。
+# 固定使用 kenzok8 版本，保持固件内现有 DNS 默认配置和二进制打包方式一致。
+./scripts/feeds uninstall luci-app-adguardhome adguardhome
+./scripts/feeds install -p kenzok8 luci-app-adguardhome adguardhome
+
 # dnsmasq 的 IPset 子选项依赖 dnsmasq-full，不能再反向成为包本身的条件。
 # 本固件供 OpenClash 使用，始终提供 IPset 内核模块。
 sed -i 's/+PACKAGE_dnsmasq_full_ipset:kmod-ipt-ipset/+kmod-ipt-ipset/g' package/network/services/dnsmasq/Makefile
@@ -76,3 +81,11 @@ git -C package/autoreboot-src sparse-checkout set applications/luci-app-autorebo
 mv package/autoreboot-src/applications/luci-app-autoreboot package/luci-app-autoreboot
 rm -rf package/autoreboot-src
 sed -i 's#include ../../luci.mk#include $(TOPDIR)/feeds/luci/luci.mk#' package/luci-app-autoreboot/Makefile
+
+# TurboAcc 未包含在当前 luci openwrt-25.12 feed 中，单独取自 LEDE LuCI master。
+# 该版本的 INCLUDE_* 选项与 x86_64-full.config、99-turboacc 默认配置一致。
+git clone --depth=1 --filter=blob:none --sparse https://github.com/coolsnowwolf/luci.git package/turboacc-src
+git -C package/turboacc-src sparse-checkout set applications/luci-app-turboacc
+mv package/turboacc-src/applications/luci-app-turboacc package/luci-app-turboacc
+rm -rf package/turboacc-src
+sed -i 's#include ../../luci.mk#include $(TOPDIR)/feeds/luci/luci.mk#' package/luci-app-turboacc/Makefile
