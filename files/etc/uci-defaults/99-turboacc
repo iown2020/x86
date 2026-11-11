@@ -1,0 +1,15 @@
+#!/bin/sh
+# TurboAcc：只启用 BBR；流量分载与 SQM/EQoS/OpenClash(tproxy) 冲突，默认关闭
+[ -f /etc/config/turboacc ] || exit 0
+
+uci -q set turboacc.config.bbr_cca='1'
+uci -q set turboacc.config.sw_flow='0'
+uci -q set turboacc.config.hw_flow='0'
+uci -q set turboacc.config.sfe_flow='0'
+uci -q set turboacc.config.dns_caching='0'
+uci -q commit turboacc
+
+# 确保开机执行，BBR 等设置在每次启动时重新应用
+[ -x /etc/init.d/turboacc ] && /etc/init.d/turboacc enable
+
+exit 0

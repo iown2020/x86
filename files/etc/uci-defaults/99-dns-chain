@@ -1,0 +1,45 @@
+#!/bin/sh
+# 首次启动建立 DNS 链路：dnsmasq(53) -> MosDNS(5335) -> OpenClash(7874, fake-ip)
+# AdGuardHome 只编译不启用，需要统计/家长控制时可在 LuCI 中手动开启并接管 53。
+[ -x /etc/init.d/mosdns ] || exit 0
+
+# 1. AdGuardHome：默认不启用，但不执行 disable，保留开机自启能力
+if [ -f /etc/config/AdGuardHome ]; then
+    uci -q set AdGuardHome.AdGuardHome.enabled='0'
+    uci -q commit AdGuardHome
+fi
+
+# 2. MosDNS：仅监听本机 5335；开启「DNS 重定向」由它自己接管 dnsmasq 上游
+#    redirect=1 会写入 server=127.0.0.1#5335、noresolv=1、cachesize=0、rebind_protection=0
+uci -q set mosdns.config.enabled='1'
+uci -q set mosdns.config.listen_address='127.0.0.1'
+uci -q set mosdns.config.listen_port='5335'
+uci -q set mosdns.config.redirect='1'
+# 「本地 DNS 劫持」保持关闭：53 仍由 dnsmasq 提供，避免 nft 抢端口
+uci -q set mosdns.config.local_dns_redirect='0'
+uci -q delete mosdns.config.remote_dns
+uci -q add_list mosdns.config.remote_dns='127.0.0.1:7874'
+# 性能与解析策略：开启缓存与流水线，最小 TTL 60s 减少重复查询
+uci -q set mosdns.config.cache='1'
+uci -q set mosdns.config.cache_size='16000'
+uci -q set mosdns.config.lazy_cache_ttl='86400'
+uci -q set mosdns.config.minimal_ttl='60'
+uci -q set mosdns.config.concurrent='3'
+uci -q set mosdns.config.enable_pipeline='1'
+uci -q set mosdns.config.bootstrap_dns='223.5.5.5'
+# GeoIP/GeoSite 数据每周一 02:00 自动更新
+uci -q set mosdns.config.geo_auto_update='1'
+uci -q set mosdns.config.geo_update_week_time='1'
+uci -q commit mosdns
+/etc/init.d/mosdns enable
+
+# 3. dnsmasq 上游由 MosDNS 的 redirect 自动维护，这里不再手写 server，
+#    避免 LuCI 中「DNS 重定向」开关状态与实际配置不一致。
+
+# 4. OpenClash：只做代理，关闭本地 DNS 劫持，DNS 由 MosDNS 转发到 7874
+if [ -f /etc/config/openclash ]; then
+    uci -q set openclash.config.enable_redirect_dns='0'
+    uci -q commit openclash
+fi
+
+exit 0
