@@ -51,8 +51,8 @@
 - `ipv6helper`、dnsmasq DHCPv6 支持、`6in4`、`6rd`、`6to4`、`iptables` / `ip6tables` 全套。
 
 ### 虚拟化客户机
-- VirtIO：`kmod-virtio-pci`、`virtio-net`、`virtio-blk`、`virtio-scsi`、`virtio-balloon`、`virtio-console`。
-- Hyper-V：`kmod-hyperv-net-vscsi`、`kmod-hyperv-storage`。
+- 当前 x86_64 6.18 内核已直接内置 VirtIO PCI/网卡/磁盘/SCSI/内存气球/控制台驱动。
+- Hyper-V 网络、存储、内存气球等客户机驱动同样已内置，无需安装旧版 `kmod-hyperv-*` 软件包。
 - `qemu-ga`：QEMU Guest Agent。
 - x86 目标默认包已含 `kmod-vmxnet3`（VMware）、`kmod-e1000e`、`kmod-igb/igc` 等。
 
@@ -130,6 +130,7 @@
 - [kenzok8/openwrt-packages](https://github.com/kenzok8/openwrt-packages)（EQoS、AdGuardHome、advanced 等）
 - [sbwml/luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)
 - [immortalwrt/luci](https://github.com/immortalwrt/luci)（定时重启）
+- [coolsnowwolf/luci](https://github.com/coolsnowwolf/luci)（TurboAcc，取自 master 分支）
 - [sirpdboy/NetSpeedTest](https://github.com/sirpdboy/NetSpeedTest)
 - [esirplayground/luci-app-poweroff](https://github.com/esirplayground/luci-app-poweroff)
 - [nickilchen/luci-app-socat](https://github.com/nickilchen/luci-app-socat)
