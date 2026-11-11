@@ -84,7 +84,7 @@ sed -i 's#include ../../luci.mk#include $(TOPDIR)/feeds/luci/luci.mk#' package/l
 
 # TurboAcc 未包含在当前 luci openwrt-25.12 feed 中，单独取自 LEDE LuCI master。
 # 该版本的 INCLUDE_* 选项与 x86_64-full.config、99-turboacc 默认配置一致。
-git clone --depth=1 --filter=blob:none --sparse https://github.com/coolsnowwolf/luci.git package/turboacc-src
+git clone --depth=1 --filter=blob:none --sparse --branch master https://github.com/coolsnowwolf/luci.git package/turboacc-src
 git -C package/turboacc-src sparse-checkout set applications/luci-app-turboacc
 mv package/turboacc-src/applications/luci-app-turboacc package/luci-app-turboacc
 rm -rf package/turboacc-src
