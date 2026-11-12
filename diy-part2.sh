@@ -37,10 +37,6 @@ git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-a
 # 本固件不使用 Open vSwitch；当前 feed 的同名 PROVIDES 会生成自依赖。
 ./scripts/feeds uninstall openvswitch ovn ovsd
 
-# LuCI feed 的 EQoS 依赖高通 NSS；x86 使用已添加的 kenzok8 通用版本。
-./scripts/feeds uninstall luci-app-eqos
-./scripts/feeds install -p kenzok8 luci-app-eqos
-
 # 当前 LuCI feed 也有 AdGuardHome，但没有 INCLUDE_binary 子选项，且配置/init 名称不同。
 # 固定使用 kenzok8 版本，保持固件内现有 DNS 默认配置和二进制打包方式一致。
 ./scripts/feeds uninstall luci-app-adguardhome adguardhome
