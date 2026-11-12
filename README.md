@@ -88,7 +88,7 @@
 5. **dnsmasq 补丁**：强制提供 `kmod-ipt-ipset`，解决 IPset 子选项与 `dnsmasq-full` 的循环依赖，供 OpenClash 使用。
 6. **网速测试补丁**：移除已废弃的 `python3-pkg-resources` 依赖。
 7. **EQoS 来源**：使用 kenzok8 软件源的通用版本；若切回官方源，需确认 x86 下不会被 NSS 依赖挡掉。
-8. **外部源冲突**：kenzok8、mosdns、neobird、linkease 等额外 feeds 可能与上游包重名，出现覆盖警告属正常；新增插件后建议先跑 `config_only`。
+8. **外部源冲突**：kenzok8、mosdns 等额外 feeds 可能与上游包重名，出现覆盖警告属正常；新增插件后建议先跑 `config_only`。
 9. **内核随上游变化**：构建拉取 master，内核补丁版本会变；如需固定版本，请在配置中锁定或改用固定分支。
 10. **Docker**：默认未启用，且根分区 800M 对镜像运行偏紧，启用前请同步调大 `CONFIG_TARGET_ROOTFS_PARTSIZE`。
 11. **VMDK**：发布强校验 VMDK；若上游移除该格式支持，构建会直接失败而不是发布缺件版本。
