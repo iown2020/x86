@@ -35,8 +35,7 @@
 - **bash / nano / curl**：基础工具。
 - **KMS**：`vlmcsd` + `luci-app-vlmcsd`。
 - **AdGuardHome**：已编译进固件（含核心二进制），默认不启用；需要按客户端统计、家长控制或 DoH 时在 LuCI 手动开启并接管 53。
-- **EQoS**：限速（使用 kenzok8 通用版，避开 NSS 依赖）。
-- **TurboAcc**：网络加速面板，默认只开启 BBR；流量分载（Flow Offload）与 SQM/EQoS/OpenClash 冲突，需手动开启。
+- **TurboAcc**：网络加速面板，默认只开启 BBR；流量分载（Flow Offload）与 SQM/OpenClash 冲突，需手动开启。
 - **cpulimit**：CPU 占用限制。
 - **netdata**：系统监控。
 - **SQM**：QoS 队列。
@@ -73,7 +72,7 @@
 - **构建环境**：`ubuntu-22.04`，超时 6 小时；先释放磁盘、安装依赖并恢复下载缓存。
 - **下载阶段**：首次 `make download -j8` 最长 35 分钟，失败后降为 `-j4` 重试 25 分钟。
 - **产物校验**：必须实际生成 x86 镜像且包含 `*.vmdk`，否则不创建 Release。
-- **关键包校验**：Argon、OpenClash、MosDNS、网速测试、EQoS、TurboAcc、定时重启、EasyTier、UPnP、ttyd、KMS 若被 `defconfig` 丢弃，直接中断构建。
+- **关键包校验**：Argon、OpenClash、MosDNS、网速测试、TurboAcc、定时重启、EasyTier、UPnP、ttyd、KMS 若被 `defconfig` 丢弃，直接中断构建。
 - **日志**：每次运行都会上传 `build-logs` Artifact，含 `config.log`、`download.log`、`build.log`、最终配置、feeds 配置和源码提交版本。
 - **缓存**：编译使用 ccache，`dl` 目录使用 Actions 缓存；缓存键包含配置与 diy 脚本哈希。
 - **清理**：仅保留最近 1 天的 Actions 运行记录和最近 30 个 Release。
@@ -87,16 +86,15 @@
 4. **EasyTier 版本**：使用官方预编译包（当前 2.7.0，编译时从 GitHub Release 下载），并移除了 feeds 中同名 Rust 版本，避免重复包。
 5. **dnsmasq 补丁**：强制提供 `kmod-ipt-ipset`，解决 IPset 子选项与 `dnsmasq-full` 的循环依赖，供 OpenClash 使用。
 6. **网速测试补丁**：移除已废弃的 `python3-pkg-resources` 依赖。
-7. **EQoS 来源**：使用 kenzok8 软件源的通用版本；若切回官方源，需确认 x86 下不会被 NSS 依赖挡掉。
-8. **外部源冲突**：kenzok8、mosdns 等额外 feeds 可能与上游包重名，出现覆盖警告属正常；新增插件后建议先跑 `config_only`。
-9. **内核随上游变化**：构建拉取 master，内核补丁版本会变；如需固定版本，请在配置中锁定或改用固定分支。
-10. **Docker**：默认未启用，且根分区 800M 对镜像运行偏紧，启用前请同步调大 `CONFIG_TARGET_ROOTFS_PARTSIZE`。
-11. **VMDK**：发布强校验 VMDK；若上游移除该格式支持，构建会直接失败而不是发布缺件版本。
-12. **虚拟机使用**：PVE 建议磁盘控制器选 VirtIO SCSI；ESXi 可直接使用 vmxnet3 网卡。
-13. **DNS 链路**：`files/etc/uci-defaults/99-dns-chain` 首次启动会开启 MosDNS 的「DNS 重定向」，由其自动把 dnsmasq 上游改为 `127.0.0.1#5335`（无需手改 dnsmasq，停止服务时自动还原），同时关闭 OpenClash 的本地 DNS 劫持；MosDNS 的国外上游为 `127.0.0.1:7874`，因此**必须先启用 OpenClash**，否则国外域名无法解析。AdGuardHome 默认 `enabled=0`（未执行 `disable`，保留开机自启能力），需要时在 LuCI 开启，但需先把 MosDNS 的「DNS 重定向」关掉并把 AGH 提到 53。MosDNS 默认已开启 16000 条缓存、最小 TTL 60s、并发 3 与 GeoIP 每周一自动更新。
-14. **TurboAcc**：`files/etc/uci-defaults/99-turboacc` 首次启动只开启 BBR，并显式关闭 `sw_flow/hw_flow/sfe_flow`。若在 LuCI 中开启流量分载，SQM、EQoS 限速和 OpenClash 透明代理会失效或异常；需要加速直连吞吐时，请先停用 SQM/EQoS。构建时也排除了 `SHORTCUT_FE`、`PDNSD` 等 Qualcomm 专用或与 MosDNS 重复的组件。
-15. **单臂路由拓扑**：LAN 与网关同在 `eth0`（旁路由），公网端口映射实际由上级路由完成，UPnP 页面保留但无法直接映射公网端口。
-16. **DHCP 池**：`files/etc/config/dhcp` 将地址池限定在 `.10-.99`，避免与路由器地址 `.100` 冲突；修改 LAN 网段后需同步调整 `start/limit`。
+7. **外部源冲突**：kenzok8、mosdns 等额外 feeds 可能与上游包重名，出现覆盖警告属正常；新增插件后建议先跑 `config_only`。
+8. **内核随上游变化**：构建拉取 master，内核补丁版本会变；如需固定版本，请在配置中锁定或改用固定分支。
+9. **Docker**：默认未启用，且根分区 800M 对镜像运行偏紧，启用前请同步调大 `CONFIG_TARGET_ROOTFS_PARTSIZE`。
+10. **VMDK**：发布强校验 VMDK；若上游移除该格式支持，构建会直接失败而不是发布缺件版本。
+11. **虚拟机使用**：PVE 建议磁盘控制器选 VirtIO SCSI；ESXi 可直接使用 vmxnet3 网卡。
+12. **DNS 链路**：`files/etc/uci-defaults/99-dns-chain` 首次启动会开启 MosDNS 的「DNS 重定向」，由其自动把 dnsmasq 上游改为 `127.0.0.1#5335`（无需手改 dnsmasq，停止服务时自动还原），同时关闭 OpenClash 的本地 DNS 劫持；MosDNS 的国外上游为 `127.0.0.1:7874`，因此**必须先启用 OpenClash**，否则国外域名无法解析。AdGuardHome 默认 `enabled=0`（未执行 `disable`，保留开机自启能力），需要时在 LuCI 开启，但需先把 MosDNS 的「DNS 重定向」关掉并把 AGH 提到 53。MosDNS 默认已开启 16000 条缓存、最小 TTL 60s、并发 3 与 GeoIP 每周一自动更新。
+13. **TurboAcc**：`files/etc/uci-defaults/99-turboacc` 首次启动只开启 BBR，并显式关闭 `sw_flow/hw_flow/sfe_flow`。若在 LuCI 中开启流量分载，SQM 限速和 OpenClash 透明代理会失效或异常；需要加速直连吞吐时，请先停用 SQM。构建时也排除了 `SHORTCUT_FE`、`PDNSD` 等 Qualcomm 专用或与 MosDNS 重复的组件。
+14. **单臂路由拓扑**：LAN 与网关同在 `eth0`（旁路由），公网端口映射实际由上级路由完成，UPnP 页面保留但无法直接映射公网端口。
+15. **DHCP 池**：`files/etc/config/dhcp` 将地址池限定在 `.10-.99`，避免与路由器地址 `.100` 冲突；修改 LAN 网段后需同步调整 `start/limit`。
 
 ## 目录结构
 
@@ -127,7 +125,7 @@
 **插件与主题**
 - [vernesong/OpenClash](https://github.com/vernesong/OpenClash)
 - [EasyTier/luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)
-- [kenzok8/openwrt-packages](https://github.com/kenzok8/openwrt-packages)（EQoS、AdGuardHome、advanced 等）
+- [kenzok8/openwrt-packages](https://github.com/kenzok8/openwrt-packages)（AdGuardHome、advanced 等）
 - [sbwml/luci-app-mosdns](https://github.com/sbwml/luci-app-mosdns)
 - [immortalwrt/luci](https://github.com/immortalwrt/luci)（定时重启）
 - [coolsnowwolf/luci](https://github.com/coolsnowwolf/luci)（TurboAcc，取自 master 分支）
