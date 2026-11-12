@@ -44,19 +44,6 @@ git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-a
 # 本固件供 OpenClash 使用，始终提供 IPset 内核模块。
 sed -i 's/+PACKAGE_dnsmasq_full_ipset:kmod-ipt-ipset/+kmod-ipt-ipset/g' package/network/services/dnsmasq/Makefile
 
-# 添加 MMWX 主题，首次启动默认启用。
-git clone https://github.com/Wyatt323/luci-theme-mmwx.git package/luci-theme-mmwx
-mkdir -p files/etc/uci-defaults
-cp package/luci-theme-mmwx/examples/99-mmwx-default files/etc/uci-defaults/
-chmod 0755 files/etc/uci-defaults/99-mmwx-default
-
-# 添加 GWRT 主题。仓库根目录不是单一包，只取其中的主题包目录。
-git clone --depth=1 https://github.com/rothdren-lion/gwrt-theme.git package/gwrt-theme-src
-mv package/gwrt-theme-src/theme/luci-theme-gwrt package/luci-theme-gwrt
-rm -rf package/gwrt-theme-src
-# 状态页仅在选用 GWRT 时渲染其仪表盘，其他主题（含默认 MMWX）保留原生状态页。
-sed -i "s/if (theme == 'bootstrap')/if (theme != 'gwrt')/" package/luci-theme-gwrt/root/usr/share/gwrt/admin_status-index.ut
-
 # 下载实际启用的额外插件。未启用的插件可从 feeds 中另行选择。
 mkdir -p package/lean
 
