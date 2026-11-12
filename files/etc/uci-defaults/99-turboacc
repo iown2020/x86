@@ -1,5 +1,5 @@
 #!/bin/sh
-# TurboAcc：只启用 BBR；流量分载与 SQM/EQoS/OpenClash(tproxy) 冲突，默认关闭
+# TurboAcc：只启用 BBR；流量分载与 SQM/OpenClash(tproxy) 冲突，默认关闭
 [ -f /etc/config/turboacc ] || exit 0
 
 uci -q set turboacc.config.bbr_cca='1'
