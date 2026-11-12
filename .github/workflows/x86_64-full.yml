@@ -202,12 +202,19 @@ jobs:
     - name: Create swap
       if: inputs.config_only != true
       run: |
-        sudo fallocate -l 8G /swapfile
-        sudo chmod 600 /swapfile
-        sudo mkswap /swapfile
-        sudo swapon /swapfile
+        # Runner 镜像可能已存在并正在使用 /swapfile，不能覆盖，改用独立文件。
+        SWAPFILE=/swapfile-build
+        sudo swapoff "$SWAPFILE" 2>/dev/null || true
+        sudo rm -f "$SWAPFILE"
+        sudo fallocate -l 4G "$SWAPFILE" || {
+          sudo rm -f "$SWAPFILE"
+          sudo dd if=/dev/zero of="$SWAPFILE" bs=1M count=4096 status=none
+        }
+        sudo chmod 600 "$SWAPFILE"
+        sudo mkswap "$SWAPFILE" >/dev/null
+        sudo swapon "$SWAPFILE"
         sudo sysctl -w vm.swappiness=10
-        echo 'Swap created:'; free -h
+        echo '--- swap ---'; swapon --show; free -h
 
     - name: Compile the firmware
       id: compile
