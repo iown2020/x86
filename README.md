@@ -16,7 +16,7 @@
 | 内核分区 / 根分区 | 32M / 800M |
 | 镜像格式 | GRUB、EFI、VMDK（VMDK 为必需产物，缺失即停止发布） |
 | LuCI 语言 | 简体中文 + English |
-| 默认主题 | MMWX（内置 Argon、GWRT 可切换） |
+| 默认主题 | Argon（jerrykuku 源，唯一内置主题） |
 | 音频组件 | 已全部移除（无声卡 / HDMI / USB 音频驱动） |
 
 配置以 `files/etc/config/network` 与 `x86_64-full.config` 为准。
@@ -57,7 +57,7 @@
 - x86 目标默认包已含 `kmod-vmxnet3`（VMware）、`kmod-e1000e`、`kmod-igb/igc` 等。
 
 ### 主题
-- **MMWX**（默认）、**Argon**（jerrykuku 源）、**GWRT**（`rothdren-lion/gwrt-theme`）。
+- **Argon**（默认，jerrykuku 源，首次启动由 `files/etc/uci-defaults/99-argon-default` 设为默认）。
 
 ### 未预装 / 已停用
 - Docker（`luci-app-dockerman`）、PassWall、SmartDNS、NPS/FRPS、Transmission/qBittorrent/Aria2、rclone、VSSR、PPTP 服务端、Watchcat、ServerChan 等均未启用。
@@ -73,7 +73,7 @@
 - **构建环境**：`ubuntu-22.04`，超时 6 小时；先释放磁盘、安装依赖并恢复下载缓存。
 - **下载阶段**：首次 `make download -j8` 最长 35 分钟，失败后降为 `-j4` 重试 25 分钟。
 - **产物校验**：必须实际生成 x86 镜像且包含 `*.vmdk`，否则不创建 Release。
-- **关键包校验**：MMWX、GWRT、OpenClash、MosDNS、网速测试、EQoS、TurboAcc、定时重启、EasyTier、UPnP、ttyd、KMS 若被 `defconfig` 丢弃，直接中断构建。
+- **关键包校验**：Argon、OpenClash、MosDNS、网速测试、EQoS、TurboAcc、定时重启、EasyTier、UPnP、ttyd、KMS 若被 `defconfig` 丢弃，直接中断构建。
 - **日志**：每次运行都会上传 `build-logs` Artifact，含 `config.log`、`download.log`、`build.log`、最终配置、feeds 配置和源码提交版本。
 - **缓存**：编译使用 ccache，`dl` 目录使用 Actions 缓存；缓存键包含配置与 diy 脚本哈希。
 - **清理**：仅保留最近 1 天的 Actions 运行记录和最近 30 个 Release。
@@ -83,7 +83,7 @@
 
 1. **空密码有风险**：首次登录后请立即在「系统 → 管理权」设置 root 密码；同时建议只在内网开放 LuCI。
 2. **浏览器**：请使用 Google Chrome 访问 LuCI，其他浏览器可能显示异常。
-3. **默认主题与 GWRT**：默认 MMWX；GWRT 的状态页仪表盘只在其自身主题启用时渲染，其他主题保持原生状态页（脚本已打补丁）。
+3. **默认主题**：Argon 在首次启动时自动设为默认（uci-defaults），登录 LuCI 即为 Argon 界面。
 4. **EasyTier 版本**：使用官方预编译包（当前 2.7.0，编译时从 GitHub Release 下载），并移除了 feeds 中同名 Rust 版本，避免重复包。
 5. **dnsmasq 补丁**：强制提供 `kmod-ipt-ipset`，解决 IPset 子选项与 `dnsmasq-full` 的循环依赖，供 OpenClash 使用。
 6. **网速测试补丁**：移除已废弃的 `python3-pkg-resources` 依赖。
@@ -135,5 +135,3 @@
 - [esirplayground/luci-app-poweroff](https://github.com/esirplayground/luci-app-poweroff)
 - [nickilchen/luci-app-socat](https://github.com/nickilchen/luci-app-socat)
 - [jerrykuku/luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon)
-- [Wyatt323/luci-theme-mmwx](https://github.com/Wyatt323/luci-theme-mmwx)
-- [rothdren-lion/gwrt-theme](https://github.com/rothdren-lion/gwrt-theme)
