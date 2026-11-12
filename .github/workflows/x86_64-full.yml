@@ -204,15 +204,26 @@ jobs:
         path: /workdir/openwrt/dl
         key: ${{ steps.downloads-cache.outputs.cache-primary-key }}
 
+    - name: Create swap
+      if: inputs.config_only != true
+      run: |
+        sudo fallocate -l 8G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        sudo sysctl -w vm.swappiness=10
+        echo 'Swap created:'; free -h
+
     - name: Compile the firmware
       id: compile
       if: inputs.config_only != true
       run: |
         set -o pipefail
         cd openwrt
-        echo -e "$(nproc) thread compile"
-        if ! make -j"$(nproc)" 2>&1 | tee "$GITHUB_WORKSPACE/build-logs/build.log"; then
-          make -j2 V=s 2>&1 | tee -a "$GITHUB_WORKSPACE/build-logs/build.log"
+        echo "Before compile:"; free -h; df -hT /workdir
+        # 降低并发，避免 GitHub Runner 因 CPU/内存压力失联。
+        if ! make -j2 2>&1 | tee "$GITHUB_WORKSPACE/build-logs/build.log"; then
+          make -j1 V=s 2>&1 | tee -a "$GITHUB_WORKSPACE/build-logs/build.log"
         fi
         echo "status=success" >> "$GITHUB_OUTPUT"
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
