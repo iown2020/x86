@@ -273,63 +273,63 @@ jobs:
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> "$GITHUB_OUTPUT"
         REVISIONS="$(cat build-logs/source-revisions.txt)"
         cat > release.txt <<EOF
-## OpenWrt x86_64 固件
+        ## OpenWrt x86_64 固件
 
-基于 LEDE master + LuCI openwrt-25.12 编译，专为 x86_64 虚拟机/物理机设计。
+        基于 LEDE master + LuCI openwrt-25.12 编译，专为 x86_64 虚拟机/物理机设计。
 
-### 默认参数
+        ### 默认参数
 
-| 项目 | 值 |
-|------|-----|
-| LAN 地址 | 192.168.10.100/24 |
-| 网关 / DNS | 192.168.10.1 |
-| DHCP 范围 | 192.168.10.10 – 192.168.10.99 |
-| root 密码 | 空 |
-| 默认主题 | Argon |
+        | 项目 | 值 |
+        |------|-----|
+        | LAN 地址 | 192.168.10.100/24 |
+        | 网关 / DNS | 192.168.10.1 |
+        | DHCP 范围 | 192.168.10.10 – 192.168.10.99 |
+        | root 密码 | 空 |
+        | 默认主题 | Argon |
 
-### 固件文件说明
+        ### 固件文件说明
 
-#### 直接可用镜像
+        #### 直接可用镜像
 
-| 文件 | 适用场景 |
-|------|---------|
-| \`*-combined-efi.vmdk\` | VMware Workstation / ESXi / Hyper-V 第二代虚拟机（UEFI 启动） |
-| \`*-combined.vmdk\` | VMware / ESXi / Hyper-V 第一代虚拟机（BIOS/MBR 启动） |
-| \`*-combined-efi.img.gz\` | PVE / 物理机 U 盘，解压写入后 UEFI 启动 |
-| \`*-combined.img.gz\` | PVE / 物理机 U 盘，解压写入后 BIOS/MBR 启动 |
+        | 文件 | 适用场景 |
+        |------|---------|
+        | `*-combined-efi.vmdk` | VMware Workstation / ESXi / Hyper-V 第二代虚拟机（UEFI 启动） |
+        | `*-combined.vmdk` | VMware / ESXi / Hyper-V 第一代虚拟机（BIOS/MBR 启动） |
+        | `*-combined-efi.img.gz` | PVE / 物理机 U 盘，解压写入后 UEFI 启动 |
+        | `*-combined.img.gz` | PVE / 物理机 U 盘，解压写入后 BIOS/MBR 启动 |
 
-> \`combined\` = 内核 + rootfs + 引导扇区 + 分区表合成单文件，直接使用即可，无需额外分区。
+        > `combined` = 内核 + rootfs + 引导扇区 + 分区表合成单文件，直接使用即可，无需额外分区。
 
-#### 辅助文件
+        #### 辅助文件
 
-| 文件 | 用途 |
-|------|------|
-| \`*-kernel.bin\` | 单独内核（一般不用） |
-| \`*-rootfs.img.gz\` | 单独根文件系统（一般不用） |
-| \`*.manifest\` | 固件内含全部软件包清单（包名 + 版本） |
-| \`config.buildinfo\` | 最终生效的编译配置 |
-| \`feeds.buildinfo\` | feeds 仓库版本锁定 |
-| \`sha256sums\` | 所有文件的 SHA256 哈希，下载后校验完整性 |
+        | 文件 | 用途 |
+        |------|------|
+        | `*-kernel.bin` | 单独内核（一般不用） |
+        | `*-rootfs.img.gz` | 单独根文件系统（一般不用） |
+        | `*.manifest` | 固件内含全部软件包清单（包名 + 版本） |
+        | `config.buildinfo` | 最终生效的编译配置 |
+        | `feeds.buildinfo` | feeds 仓库版本锁定 |
+        | `sha256sums` | 所有文件的 SHA256 哈希，下载后校验完整性 |
 
-### 首次启动
+        ### 首次启动
 
-1. 浏览器访问 **http://192.168.10.100**
-2. root 密码为空，登录后立即在 **系统 → 系统** 中设置密码
-3. 默认主题为 Argon，可在 **系统 → 系统 → 语言和界面 → 主题** 中更换
-4. 已默认启用：MosDNS + OpenClash（fake-ip 分流）、TurboAcc BBR、EasyTier、UPnP、ttyd
-5. AdGuardHome 已编译但默认关闭，需在 **服务** 中手动启用
+        1. 浏览器访问 **http://192.168.10.100**
+        2. root 密码为空，登录后立即在 **系统 → 系统** 中设置密码
+        3. 默认主题为 Argon，可在 **系统 → 系统 → 语言和界面 → 主题** 中更换
+        4. 已默认启用：MosDNS + OpenClash（fake-ip 分流）、TurboAcc BBR、EasyTier、UPnP、ttyd
+        5. AdGuardHome 已编译但默认关闭，需在 **服务** 中手动启用
 
-### 源版本
+        ### 源版本
 
-\`\`\`
-${REVISIONS}
-\`\`\`
+        ```
+        ${REVISIONS}
+        ```
 
-### 参考项目
+        ### 参考项目
 
-- [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
-- [coolsnowwolf/luci](https://github.com/coolsnowwolf/luci)
-EOF
+        - [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
+        - [coolsnowwolf/luci](https://github.com/coolsnowwolf/luci)
+        EOF
         echo "status=success" >> "$GITHUB_OUTPUT"
 
     - name: Upload firmware to release
