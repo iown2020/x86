@@ -22,6 +22,12 @@ if [ -f files/etc/shadow ]; then
     chmod 0600 files/etc/shadow
 fi
 
+# LEDE 的 zzz-default-settings 会在首次启动把 root 密码改成 password（$1$V4UetPzk$...），
+# 且在 uci-defaults 中排在 99-* 之后，会覆盖 files/etc/shadow 的空密码设定，这里删除该行为。
+if [ -f package/lean/default-settings/files/zzz-default-settings ]; then
+    sed -i '/V4UetPzk/d' package/lean/default-settings/files/zzz-default-settings
+fi
+
 # 使用独立的 Argon 源，先移除 feed 安装的同名包链接。
 ./scripts/feeds uninstall luci-theme-argon
 # 新版 Argon 已集成设置及翻译，旧插件会覆盖同名中文包并引入缺失依赖。
